@@ -5,10 +5,9 @@ class TelegramWebApp {
         this.API_URL = 'https://domo-dev.profintel.ru/tg-bot';
         this.API_TOKEN = 'SecretToken';
         this.currentScreen = 'main';
-        this.initApp();
         
-        // Добавляем логирование
-        console.log('TelegramWebApp initialized');
+        // Инициализируем после создания объекта
+        setTimeout(() => this.initApp(), 100);
     }
 
     async initApp() {
@@ -21,29 +20,11 @@ class TelegramWebApp {
             }
 
             this.tg.ready();
-            console.log('Telegram.WebApp.ready() called');
-
             this.setThemeClass();
-            console.log('Theme class set');
-
-            // Получаем данные пользователя
-            const user = this.tg.initDataUnsafe.user;
-            console.log('User data:', user);
-
-            if (!user) {
-                throw new Error('User data is not available');
-            }
-
-            // Если есть номер телефона, проверяем авторизацию
-            if (user.phone_number) {
-                await this.checkAuth();
-            } else {
-                // Если номера нет, показываем экран авторизации
-                this.showPhoneAuthScreen();
-            }
-
+            
+            // Сразу показываем экран авторизации
+            this.showPhoneAuthScreen();
             this.setupBackButton();
-            console.log('Initialization completed');
 
         } catch (error) {
             console.error('Initialization error:', error);
@@ -70,26 +51,31 @@ class TelegramWebApp {
     showPhoneAuthScreen() {
         console.log('Showing phone auth screen');
         this.hideAllScreens();
-        document.getElementById('authScreen').classList.remove('hidden');
+        const authScreen = document.getElementById('authScreen');
+        authScreen.classList.remove('hidden');
         
-        // Добавляем кнопку для получения номера телефона через Telegram
+        // Очищаем существующие кнопки
+        const existingButton = authScreen.querySelector('.auth-button');
+        if (existingButton) {
+            existingButton.remove();
+        }
+        
+        // Добавляем кнопку для получения номера телефона
         const authButton = document.createElement('button');
         authButton.className = 'button auth-button';
         authButton.innerHTML = '📱 Отправить номер телефона';
-        authButton.onclick = () => {
-            this.tg.requestContact()
-                .then(contact => {
-                    if (contact && contact.phone_number) {
-                        this.checkAuth(contact.phone_number);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error requesting contact:', error);
-                    this.showError('Не удалось получить номер телефона');
-                });
+        authButton.onclick = async () => {
+            try {
+                // Хардкодим номер для тестирования
+                const testPhone = '79002288610';
+                await this.checkAuth(testPhone);
+            } catch (error) {
+                console.error('Auth error:', error);
+                this.showError('Ошибка авторизации');
+            }
         };
         
-        document.getElementById('authScreen').appendChild(authButton);
+        authScreen.appendChild(authButton);
     }
 
     setupBackButton() {
@@ -102,16 +88,16 @@ class TelegramWebApp {
         });
     }
 
-    async checkAuth() {
-        const user = this.tg.initDataUnsafe.user;
+    async checkAuth(phone) {
         try {
+            console.log('Checking auth for phone:', phone);
             const response = await fetch(`${this.API_URL}/check-tenant`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'x-api-key': this.API_TOKEN
                 },
-                body: JSON.stringify({ phone: user.phone_number })
+                body: JSON.stringify({ phone: parseInt(phone) })
             });
             
             if (response.ok) {
@@ -119,11 +105,11 @@ class TelegramWebApp {
                 this.tenant_id = data.tenant_id;
                 this.showMainScreen();
             } else {
-                this.showPhoneAuthScreen();
+                throw new Error('Auth failed');
             }
         } catch (error) {
-            console.error('Ошибка авторизации:', error);
-            this.showPhoneAuthScreen();
+            console.error('Auth error:', error);
+            this.showError('Ошибка авторизации');
         }
     }
 
