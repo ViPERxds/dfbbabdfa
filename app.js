@@ -2,7 +2,7 @@ class TelegramWebApp {
     constructor() {
         this.tg = window.Telegram.WebApp;
         this.API_URL = 'https://domo-dev.profintel.ru/tg-bot';
-        this.API_TOKEN = 'SecretToken';
+        this.API_TOKEN = settings.API_TOKEN;
         this.initApp();
     }
 
@@ -263,9 +263,18 @@ class TelegramWebApp {
         }
 
         try {
+            console.log('Sending request to:', `${this.API_URL}${endpoint}`);
+            console.log('Request config:', config);
+            
             const response = await fetch(`${this.API_URL}${endpoint}`, config);
             
-            // Проверяем статус ответа
+            console.log('Response status:', response.status);
+            
+            if (response.status === 403) {
+                console.error('Access forbidden. Check API token');
+                throw new Error('Доступ запрещен. Проверьте API токен.');
+            }
+            
             if (response.status === 422) {
                 const errorData = await response.json();
                 console.error('Validation Error:', errorData);
@@ -276,7 +285,9 @@ class TelegramWebApp {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             
-            return await response.json();
+            const data = await response.json();
+            console.log('Response data:', data);
+            return data;
         } catch (error) {
             console.error('API request error:', error);
             throw error;
