@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Авторизация</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        /* Базовые стили */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+        }
+
+        .auth-form {
+            width: 100%;
+            max-width: 300px;
+            text-align: center;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid var(--tg-theme-hint-color, #999999);
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-form">
+        <h2>Авторизация</h2>
+        <input type="tel" id="phoneInput" placeholder="Введите номер телефона">
+        <button onclick="authenticate()">Войти</button>
+    </div>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.expand();
+
+        const PHONE_MAPPING = {
+            22063: 79002288610,
+            22064: 79156562250,
+            22065: 79205451794
+        };
+
+        async function authenticate() {
+            const phone = document.getElementById('phoneInput').value.replace(/\D/g, '');
+            
+            for (let [tid, phoneNum] of Object.entries(PHONE_MAPPING)) {
+                if (phoneNum.toString() === phone) {
+                    // Сохраняем tenant_id в localStorage
+                    localStorage.setItem('tenant_id', tid);
+                    // Переходим на главное меню
+                    window.location.href = 'menu.html';
+                    return;
+                }
+            }
+            
+            tg.showAlert('Номер телефона не найден');
+        }
+    </script>
+</body>
+</html> 
