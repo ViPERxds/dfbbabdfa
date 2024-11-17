@@ -12,7 +12,7 @@
         <!-- Экран загрузки -->
         <div id="loadingScreen" class="screen">
             <div class="loader"></div>
-            <p>Загрузка...</p>
+            <p>Загрузка приложения...</p>
         </div>
 
         <!-- Экран авторизации -->
@@ -45,7 +45,31 @@
 
     <script src="app.js"></script>
     <script>
-        const app = new TelegramWebApp();
+        // Добавляем обработку ошибок при инициализации
+        window.onerror = function(msg, url, lineNo, columnNo, error) {
+            console.error('Window error:', msg, error);
+            const app = document.getElementById('app');
+            if (app) {
+                app.innerHTML = `
+                    <div class="screen error-screen">
+                        <div class="error-message">
+                            <p>⚠️ Произошла ошибка при загрузке приложения</p>
+                            <button onclick="location.reload()">Попробовать снова</button>
+                        </div>
+                    </div>
+                `;
+            }
+            return false;
+        };
+
+        // Инициализируем приложение
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                const app = new TelegramWebApp();
+            } catch (error) {
+                console.error('App initialization error:', error);
+            }
+        });
     </script>
 </body>
 </html> 

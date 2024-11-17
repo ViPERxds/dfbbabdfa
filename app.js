@@ -6,13 +6,90 @@ class TelegramWebApp {
         this.API_TOKEN = 'SecretToken';
         this.currentScreen = 'main';
         this.initApp();
+        
+        // Добавляем логирование
+        console.log('TelegramWebApp initialized');
     }
 
     async initApp() {
-        this.tg.ready();
-        this.setThemeClass();
-        await this.checkAuth();
-        this.setupBackButton();
+        try {
+            console.log('Starting initialization...');
+            
+            // Проверяем, что Telegram.WebApp доступен
+            if (!this.tg) {
+                throw new Error('Telegram WebApp is not available');
+            }
+
+            this.tg.ready();
+            console.log('Telegram.WebApp.ready() called');
+
+            this.setThemeClass();
+            console.log('Theme class set');
+
+            // Получаем данные пользователя
+            const user = this.tg.initDataUnsafe.user;
+            console.log('User data:', user);
+
+            if (!user) {
+                throw new Error('User data is not available');
+            }
+
+            // Если есть номер телефона, проверяем авторизацию
+            if (user.phone_number) {
+                await this.checkAuth();
+            } else {
+                // Если номера нет, показываем экран авторизации
+                this.showPhoneAuthScreen();
+            }
+
+            this.setupBackButton();
+            console.log('Initialization completed');
+
+        } catch (error) {
+            console.error('Initialization error:', error);
+            this.showError('Ошибка инициализации приложения');
+        }
+    }
+
+    showError(message) {
+        // Скрываем экран загрузки
+        document.getElementById('loadingScreen').classList.add('hidden');
+        
+        // Показываем ошибку
+        const errorScreen = document.createElement('div');
+        errorScreen.className = 'screen error-screen';
+        errorScreen.innerHTML = `
+            <div class="error-message">
+                <p>⚠️ ${message}</p>
+                <button onclick="location.reload()">Попробовать снова</button>
+            </div>
+        `;
+        document.getElementById('app').appendChild(errorScreen);
+    }
+
+    showPhoneAuthScreen() {
+        console.log('Showing phone auth screen');
+        this.hideAllScreens();
+        document.getElementById('authScreen').classList.remove('hidden');
+        
+        // Добавляем кнопку для получения номера телефона через Telegram
+        const authButton = document.createElement('button');
+        authButton.className = 'button auth-button';
+        authButton.innerHTML = '📱 Отправить номер телефона';
+        authButton.onclick = () => {
+            this.tg.requestContact()
+                .then(contact => {
+                    if (contact && contact.phone_number) {
+                        this.checkAuth(contact.phone_number);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error requesting contact:', error);
+                    this.showError('Не удалось получить номер телефона');
+                });
+        };
+        
+        document.getElementById('authScreen').appendChild(authButton);
     }
 
     setupBackButton() {

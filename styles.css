@@ -102,4 +102,38 @@ h3, h4 {
 
 p {
     margin: 4px 0;
+}
+
+.error-screen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+}
+
+.error-message {
+    background: rgba(255, 59, 48, 0.1);
+    padding: 16px;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.loader {
+    width: 48px;
+    height: 48px;
+    border: 5px solid var(--tg-theme-secondary-bg-color);
+    border-bottom-color: var(--tg-theme-button-color);
+    border-radius: 50%;
+    display: inline-block;
+    box-sizing: border-box;
+    animation: rotation 1s linear infinite;
+    margin: 20px auto;
+}
+
+.auth-button {
+    display: block;
+    width: 100%;
+    max-width: 300px;
+    margin: 20px auto;
+    padding: 16px;
 } 
