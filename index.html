@@ -5,195 +5,47 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Домофон</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        :root {
-            --tg-theme-bg-color: #ffffff;
-            --tg-theme-text-color: #000000;
-            --tg-theme-button-color: #40a7e3;
-            --tg-theme-button-text-color: #ffffff;
-            --tg-theme-secondary-bg-color: #f5f5f5;
-        }
-
-        body {
-            margin: 0;
-            padding: 16px;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--tg-theme-bg-color);
-            color: var(--tg-theme-text-color);
-        }
-
-        .screen {
-            padding: 16px;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            background: var(--tg-theme-secondary-bg-color);
-            color: var(--tg-theme-text-color);
-        }
-
-        .tab-btn.active {
-            background: var(--tg-theme-button-color);
-            color: var(--tg-theme-button-text-color);
-        }
-
-        /* Добавим стили для формы авторизации */
-        .phone-input {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            max-width: 300px;
-            margin: 0 auto;
-        }
-
-        input {
-            padding: 12px;
-            border: 1px solid var(--tg-theme-secondary-bg-color);
-            border-radius: 8px;
-            font-size: 16px;
-        }
-
-        button {
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            background: var(--tg-theme-button-color);
-            color: var(--tg-theme-button-text-color);
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        h2 {
-            text-align: center;
-            margin-bottom: 24px;
-        }
-
-        .tab-content {
-            margin-top: 16px;
-        }
-
-        .loader {
-            width: 48px;
-            height: 48px;
-            border: 5px solid var(--tg-theme-secondary-bg-color);
-            border-bottom-color: var(--tg-theme-button-color);
-            border-radius: 50%;
-            display: none;
-            margin: 20px auto;
-            box-sizing: border-box;
-            animation: rotation 1s linear infinite;
-        }
-
-        @keyframes rotation {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .loading {
-            display: inline-block;
-        }
-
-        .error-message {
-            color: #ff4444;
-            text-align: center;
-            padding: 16px;
-            background: rgba(255, 68, 68, 0.1);
-            border-radius: 8px;
-            margin: 16px 0;
-        }
-
-        /* Добавляем анимации */
-        .fade-in {
-            animation: fadeIn 0.3s ease-in;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        /* Улучшаем стили карточек */
-        .domofon-card, .apartment-card {
-            transition: transform 0.2s ease;
-        }
-
-        .domofon-card:active, .apartment-card:active {
-            transform: scale(0.98);
-        }
-
-        /* Улучшаем стили кнопок */
-        button {
-            transition: background-color 0.2s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        button:active {
-            transform: scale(0.98);
-        }
-
-        button:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div id="app">
-        <div id="authScreen" class="screen">
-            <h2>Авторизация</h2>
-            <div class="phone-input">
-                <input type="tel" id="phoneInput" placeholder="Введите номер телефона">
-                <button onclick="sendPhone()">Войти</button>
-            </div>
-            <div id="authLoader" class="loader"></div>
+        <!-- Экран загрузки -->
+        <div id="loadingScreen" class="screen">
+            <div class="loader"></div>
+            <p>Загрузка...</p>
         </div>
-        
+
+        <!-- Экран авторизации -->
+        <div id="authScreen" class="screen hidden">
+            <h2>👋 Добро пожаловать в систему управления домофоном!</h2>
+            <p>🔐 С помощью этого приложения вы сможете:</p>
+            <ul>
+                <li>Просматривать снимки с камер</li>
+                <li>Открывать двери</li>
+                <li>Получать уведомления о звонках</li>
+            </ul>
+            <p>📱 Для начала работы, пожалуйста, поделитесь номером телефона.</p>
+        </div>
+
+        <!-- Главный экран -->
         <div id="mainScreen" class="screen hidden">
-            <div class="tabs">
-                <button class="tab-btn active" onclick="showTab('domofons')">Домофоны</button>
-                <button class="tab-btn" onclick="showTab('apartments')">Квартиры</button>
-            </div>
-            
-            <div id="domofonsList" class="tab-content"></div>
-            <div id="apartmentsList" class="tab-content hidden"></div>
-            <div id="domofonsLoader" class="loader"></div>
-            <div id="apartmentsLoader" class="loader"></div>
+            <!-- Сюда будут добавляться кнопки меню -->
+        </div>
+
+        <!-- Экран домофонов -->
+        <div id="domofonsScreen" class="screen hidden">
+            <!-- Сюда будет добавляться список домофонов -->
+        </div>
+
+        <!-- Экран квартир -->
+        <div id="apartmentsScreen" class="screen hidden">
+            <!-- Сюда будет добавляться список квартир -->
         </div>
     </div>
+
+    <script src="app.js"></script>
     <script>
-        const PHONE_MAPPING = {
-            22063: 79002288610,
-            22064: 79156562250,
-            22065: 79205451794
-        };
-
-        const CHAT_ID_MAPPING = {
-            22063: "1061531514",
-            22064: "901275122",
-            22065: "5748749118"
-        };
-
-        const API_URL = 'https://domo-dev.profintel.ru/tg-bot';
-        const API_TOKEN = 'SecretToken';
-
-        let tg = window.Telegram.WebApp;
-        let tenant_id = null;
-        
-        // ... остальной код ...
+        const app = new TelegramWebApp();
     </script>
 </body>
 </html> 
