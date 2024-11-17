@@ -41,6 +41,7 @@ class TelegramWebApp {
                         <input type="tel" 
                             id="phoneInput" 
                             class="phone-input" 
+                            value="+"
                             placeholder="+7 (___) ___-__-__"
                         >
                         <div class="input-line"></div>
@@ -53,59 +54,88 @@ class TelegramWebApp {
             </div>
         `;
 
-        // Добавляем маску для номера телефона
         const phoneInput = document.getElementById('phoneInput');
+        
+        // Обработка ввода номера телефона
         phoneInput.addEventListener('input', (e) => {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length > 0) {
-                if (value[0] !== '7') value = '7' + value;
-                value = value.substring(0, 11);
-                e.target.value = this.formatPhoneInput(value);
+            let value = e.target.value;
+            
+            // Всегда оставляем + в начале
+            if (!value.startsWith('+')) {
+                value = '+' + value;
             }
+            
+            // Убираем все нецифровые символы, кроме +
+            let digits = value.substring(1).replace(/\D/g, '');
+            
+            // Ограничиваем длину до 11 цифр
+            if (digits.length > 11) {
+                digits = digits.substring(0, 11);
+            }
+            
+            // Форматируем номер
+            e.target.value = this.formatPhoneInput(digits);
         });
 
-        // Добавляем фокус на поле ввода
+        // Обработка фокуса
         phoneInput.addEventListener('focus', () => {
             phoneInput.parentElement.classList.add('focused');
+            // Если поле пустое, добавляем +
+            if (!phoneInput.value) {
+                phoneInput.value = '+';
+            }
         });
 
         phoneInput.addEventListener('blur', () => {
-            if (!phoneInput.value) {
-                phoneInput.parentElement.classList.remove('focused');
+            if (phoneInput.value === '+') {
+                phoneInput.value = '';
             }
+            phoneInput.parentElement.classList.remove('focused');
         });
     }
 
     async handleAuth() {
-        const phone = document.getElementById('phoneInput').value.replace(/\D/g, '');
-        if (phone.length !== 11) {
-            this.showError('Введите корректный номер');
+        const phoneInput = document.getElementById('phoneInput');
+        // Получаем только цифры из номера
+        const digits = phoneInput.value.replace(/\D/g, '');
+        
+        // Проверяем формат номера
+        if (digits.length !== 11) {
+            this.showError('Введите номер в формате +7 (XXX) XXX-XX-XX');
             return;
         }
-        await this.checkAuth(phone);
+
+        try {
+            await this.checkAuth(digits);
+        } catch (error) {
+            this.showError('Ошибка авторизации');
+        }
     }
 
     async checkAuth(phone) {
         try {
-            const response = await fetch(`${this.API_URL}/check-tenant`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-api-key': this.API_TOKEN
-                },
-                body: JSON.stringify({ phone: parseInt(phone) })
+            const data = await this.apiRequest('/check-tenant', 'POST', { 
+                phone: parseInt(phone) 
             });
-            
-            if (response.ok) {
-                const data = await response.json();
-                this.tenant_id = data.tenant_id;
-                this.showMainMenu();
-            } else {
-                throw new Error('Auth failed');
-            }
+            this.tenant_id = data.tenant_id;
+            this.showMainMenu();
         } catch (error) {
-            this.showError('Ошибка авторизации');
+            console.error('Auth error:', error);
+            throw error;
         }
+    }
+
+    formatPhoneInput(digits) {
+        if (!digits) return '+';
+        
+        let formatted = '+';
+        if (digits.length > 0) formatted += digits.substring(0, 1);
+        if (digits.length > 1) formatted += ' (' + digits.substring(1, 4);
+        if (digits.length > 4) formatted += ') ' + digits.substring(4, 7);
+        if (digits.length > 7) formatted += '-' + digits.substring(7, 9);
+        if (digits.length > 9) formatted += '-' + digits.substring(9, 11);
+        
+        return formatted;
     }
 
     showMainMenu() {
@@ -204,19 +234,6 @@ class TelegramWebApp {
         }
     }
 
-    // Вспомогательные методы
-    formatPhoneInput(value) {
-        if (!value) return '';
-        const match = value.match(/^(\d{1})(\d{0,3})(\d{0,3})(\d{0,2})(\d{0,2})$/);
-        if (!match) return value;
-        let formatted = '+' + match[1];
-        if (match[2]) formatted += ` (${match[2]}`;
-        if (match[3]) formatted += `) ${match[3]}`;
-        if (match[4]) formatted += `-${match[4]}`;
-        if (match[5]) formatted += `-${match[5]}`;
-        return formatted;
-    }
-
     showError(message) {
         const errorDiv = document.createElement('div');
         errorDiv.className = 'error';
@@ -225,5 +242,52 @@ class TelegramWebApp {
         setTimeout(() => errorDiv.remove(), 3000);
     }
 
-    // API методы остаются без изменений
+    // Добавляем общий метод для API запросов
+    async apiRequest(endpoint, method = 'GET', body = null) {
+        const config = {
+            method,
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': this.API_TOKEN
+            },
+            mode: 'no-cors' // Добавляем этот параметр для обхода CORS
+        };
+
+        if (body) {
+            config.body = JSON.stringify(body);
+        }
+
+        try {
+            const response = await fetch(`${this.API_URL}${endpoint}`, config);
+            if (!response.ok) throw new Error('API request failed');
+            return await response.json();
+        } catch (error) {
+            console.error('API request error:', error);
+            throw error;
+        }
+    }
+
+    // Обновляем остальные методы API
+    async getDomofons() {
+        return await this.apiRequest(`/domo.apartment?tenant_id=${this.tenant_id}`);
+    }
+
+    async getSnapshot(domofonId) {
+        return await this.apiRequest('/domo.domofon/urlsOnType', 'POST', {
+            intercoms_id: [domofonId],
+            media_type: ["JPEG"],
+            tenant_id: this.tenant_id
+        });
+    }
+
+    async openDoor(domofonId) {
+        return await this.apiRequest(`/domo.domofon/${domofonId}/open`, 'POST', {
+            door_id: 0,
+            tenant_id: this.tenant_id
+        });
+    }
+
+    async getApartments() {
+        return await this.apiRequest(`/domo.apartment?tenant_id=${this.tenant_id}`);
+    }
 }
