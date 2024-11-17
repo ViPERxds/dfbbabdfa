@@ -6,7 +6,7 @@ class TelegramWebApp {
         this.API_TOKEN = 'SecretToken';
         this.currentScreen = 'main';
         
-        // Инициализируем после создания объекта
+        // Инициализируем после создания объект��
         setTimeout(() => this.initApp(), 100);
     }
 
@@ -54,28 +54,80 @@ class TelegramWebApp {
         const authScreen = document.getElementById('authScreen');
         authScreen.classList.remove('hidden');
         
-        // Очищаем существующие кнопки
-        const existingButton = authScreen.querySelector('.auth-button');
-        if (existingButton) {
-            existingButton.remove();
-        }
-        
-        // Добавляем кнопку для получения номера телефона
-        const authButton = document.createElement('button');
-        authButton.className = 'button auth-button';
-        authButton.innerHTML = '📱 Отправить номер телефона';
-        authButton.onclick = async () => {
-            try {
-                // Хардкодим номер для тестирования
-                const testPhone = '79002288610';
-                await this.checkAuth(testPhone);
-            } catch (error) {
-                console.error('Auth error:', error);
-                this.showError('Ошибка авторизации');
+        // Очищаем содержимое
+        authScreen.innerHTML = `
+            <div class="welcome-screen">
+                <h2>👋 Добро пожаловать в систему управления домофоном!</h2>
+                
+                <div class="features-block">
+                    <p>🔐 С помощью этого приложения вы сможете:</p>
+                    <ul>
+                        <li>Просматривать снимки с камер</li>
+                        <li>Открывать двери</li>
+                        <li>Получать уведомления о звонках</li>
+                    </ul>
+                </div>
+                
+                <div class="auth-form">
+                    <p>📱 Для начала работы введите номер телефона:</p>
+                    <div class="input-group">
+                        <input type="tel" 
+                               id="phoneInput" 
+                               placeholder="+7 (___) ___-__-__"
+                               class="phone-input">
+                    </div>
+                    <button class="auth-button" onclick="app.handlePhoneAuth()">
+                        Продолжить
+                    </button>
+                    <div id="authError" class="error-message hidden"></div>
+                </div>
+            </div>
+        `;
+
+        // Добавляем маску для номера телефона
+        const phoneInput = document.getElementById('phoneInput');
+        phoneInput.addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 0) {
+                if (value[0] !== '7') value = '7' + value;
+                value = value.substring(0, 11);
+                const formatted = this.formatPhoneInput(value);
+                e.target.value = formatted;
             }
-        };
+        });
+    }
+
+    formatPhoneInput(value) {
+        if (!value) return '';
+        const match = value.match(/^(\d{1})(\d{0,3})(\d{0,3})(\d{0,2})(\d{0,2})$/);
+        if (!match) return value;
         
-        authScreen.appendChild(authButton);
+        let formatted = '+' + match[1];
+        if (match[2]) formatted += ` (${match[2]}`;
+        if (match[3]) formatted += `) ${match[3]}`;
+        if (match[4]) formatted += `-${match[4]}`;
+        if (match[5]) formatted += `-${match[5]}`;
+        
+        return formatted;
+    }
+
+    async handlePhoneAuth() {
+        const phoneInput = document.getElementById('phoneInput');
+        const errorDiv = document.getElementById('authError');
+        const phone = phoneInput.value.replace(/\D/g, '');
+
+        if (phone.length !== 11) {
+            errorDiv.textContent = '⚠️ Введите корректный номер телефона';
+            errorDiv.classList.remove('hidden');
+            return;
+        }
+
+        try {
+            await this.checkAuth(phone);
+        } catch (error) {
+            errorDiv.textContent = '⚠️ Ошибка авторизации';
+            errorDiv.classList.remove('hidden');
+        }
     }
 
     setupBackButton() {
@@ -117,20 +169,28 @@ class TelegramWebApp {
         this.currentScreen = 'main';
         this.tg.BackButton.hide();
         this.hideAllScreens();
-        document.getElementById('mainScreen').classList.remove('hidden');
+        const mainScreen = document.getElementById('mainScreen');
+        mainScreen.classList.remove('hidden');
         
-        // Создаем кнопки главного меню
-        const mainMenu = document.createElement('div');
-        mainMenu.className = 'main-menu';
-        mainMenu.innerHTML = `
-            <button class="menu-button" onclick="app.showApartmentsScreen()">
-                🏠 Посмотреть квартиры
-            </button>
-            <button class="menu-button" onclick="app.showDomofonsScreen()">
-                🚪 Посмотреть домофоны
-            </button>
+        mainScreen.innerHTML = `
+            <div class="container">
+                <div class="header">
+                    <h1>Система управления домофоном</h1>
+                </div>
+                <div class="menu-grid">
+                    <div class="menu-card" onclick="app.showApartmentsScreen()">
+                        <div class="menu-icon">🏠</div>
+                        <h3>Мои квартиры</h3>
+                        <p>Информация о квартирах и жильцах</p>
+                    </div>
+                    <div class="menu-card" onclick="app.showDomofonsScreen()">
+                        <div class="menu-icon">🚪</div>
+                        <h3>Домофоны</h3>
+                        <p>Управление домофонами и камерами</p>
+                    </div>
+                </div>
+            </div>
         `;
-        document.getElementById('mainScreen').appendChild(mainMenu);
     }
 
     async showDomofonsScreen() {
@@ -140,33 +200,48 @@ class TelegramWebApp {
         const domofonsScreen = document.getElementById('domofonsScreen');
         domofonsScreen.classList.remove('hidden');
 
+        domofonsScreen.innerHTML = `
+            <div class="container">
+                <div class="header">
+                    <h2>Управление домофонами</h2>
+                </div>
+                <div class="domofons-grid" id="domofonsList">
+                    <div class="loader"></div>
+                </div>
+            </div>
+        `;
+
         const domofons = await this.getDomofons();
-        const domofonsList = document.createElement('div');
-        domofonsList.className = 'domofons-list';
+        const domofonsList = document.getElementById('domofonsList');
+        domofonsList.innerHTML = '';
 
         domofons.forEach(domofon => {
-            const domofonCard = document.createElement('div');
-            domofonCard.className = 'domofon-card';
-            domofonCard.innerHTML = `
-                <div class="domofon-info">
-                    <span class="domofon-name">📷 Камера ${domofon.name}</span>
+            const card = document.createElement('div');
+            card.className = 'domofon-card';
+            card.innerHTML = `
+                <div class="card-header">
+                    <h3>📷 ${domofon.name}</h3>
                 </div>
-                <div class="domofon-controls">
-                    <button class="button" onclick="app.getSnapshot(${domofon.id})">
-                        📷 Снимок
-                    </button>
-                    ${!domofon.name.toLowerCase().includes('консьерж') ? `
-                        <button class="button success" onclick="app.openDoor(${domofon.id})">
-                            🔓 Открыть
+                <div class="card-content">
+                    <div class="preview-container" id="preview_${domofon.id}">
+                        <div class="preview-placeholder">
+                            Нажмите "Снимок" для просмотра
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="button" onclick="app.handleSnapshot(${domofon.id})">
+                            📷 Снимок
                         </button>
-                    ` : ''}
+                        ${!domofon.name.toLowerCase().includes('консьерж') ? `
+                            <button class="button success" onclick="app.handleDoorOpen(${domofon.id})">
+                                🔓 Открыть дверь
+                            </button>
+                        ` : ''}
+                    </div>
                 </div>
             `;
-            domofonsList.appendChild(domofonCard);
+            domofonsList.appendChild(card);
         });
-
-        domofonsScreen.innerHTML = '';
-        domofonsScreen.appendChild(domofonsList);
     }
 
     async showApartmentsScreen() {
@@ -283,5 +358,61 @@ class TelegramWebApp {
     // Метод для отправки данных в бот
     sendDataToBot(data) {
         this.tg.sendData(JSON.stringify(data));
+    }
+
+    async handleSnapshot(domofonId) {
+        const previewContainer = document.getElementById(`preview_${domofonId}`);
+        previewContainer.innerHTML = '<div class="loader"></div>';
+        
+        try {
+            const snapshotUrl = await this.getSnapshot(domofonId);
+            if (snapshotUrl) {
+                previewContainer.innerHTML = `
+                    <img src="${snapshotUrl}" alt="Снимок с камеры" class="snapshot-image">
+                    <div class="snapshot-timestamp">
+                        ${new Date().toLocaleTimeString()}
+                    </div>
+                `;
+            } else {
+                throw new Error('Не удалось получить снимок');
+            }
+        } catch (error) {
+            previewContainer.innerHTML = `
+                <div class="error-message">
+                    Ошибка получения снимка
+                </div>
+            `;
+        }
+    }
+
+    async handleDoorOpen(domofonId) {
+        const card = document.querySelector(`#preview_${domofonId}`).closest('.domofon-card');
+        const statusElement = document.createElement('div');
+        statusElement.className = 'door-status';
+        
+        try {
+            const success = await this.openDoor(domofonId);
+            if (success) {
+                statusElement.innerHTML = `
+                    <div class="success-message">
+                        ✅ Дверь успешно открыта
+                        <div class="status-details">
+                            🕐 ${new Date().toLocaleTimeString()}
+                        </div>
+                    </div>
+                `;
+            } else {
+                throw new Error('Не удалось открыть дверь');
+            }
+        } catch (error) {
+            statusElement.innerHTML = `
+                <div class="error-message">
+                    ❌ Ошибка при открытии двери
+                </div>
+            `;
+        }
+        
+        card.appendChild(statusElement);
+        setTimeout(() => statusElement.remove(), 3000);
     }
 }
