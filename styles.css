@@ -1,256 +1,222 @@
 :root {
-    --tg-theme-bg-color: var(--tg-theme-bg-color, #1f2937);
-    --tg-theme-text-color: var(--tg-theme-text-color, #ffffff);
-    --tg-theme-button-color: var(--tg-theme-button-color, #3390ec);
-    --tg-theme-button-text-color: var(--tg-theme-button-text-color, #ffffff);
-    --tg-theme-secondary-bg-color: var(--tg-theme-secondary-bg-color, #374151);
+    --primary-color: #3390ec;
     --success-color: #34c759;
+    --error-color: #ff3b30;
+    --text-color: var(--tg-theme-text-color, #000);
+    --bg-color: var(--tg-theme-bg-color, #fff);
+    --button-color: var(--tg-theme-button-color, #3390ec);
+    --button-text-color: var(--tg-theme-button-text-color, #fff);
 }
 
 body {
-    background-color: var(--tg-theme-bg-color);
-    color: var(--tg-theme-text-color);
-    margin: 0;
-    padding: 16px;
+    background-color: var(--bg-color);
+    color: var(--text-color);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    margin: 0;
+    padding: 20px;
+    line-height: 1.6;
 }
 
-.screen {
-    padding: 16px;
+/* Анимации */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
-.hidden {
-    display: none;
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.main-menu {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
 }
 
-.menu-button {
-    background-color: var(--tg-theme-secondary-bg-color);
-    color: var(--tg-theme-text-color);
-    border: none;
-    padding: 16px;
-    border-radius: 8px;
-    font-size: 16px;
-    text-align: left;
-    cursor: pointer;
+.fade-in {
+    animation: fadeIn 0.5s ease-out;
 }
 
-.domofon-card {
-    background: var(--tg-theme-secondary-bg-color);
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.slide-up {
+    animation: slideUp 0.5s ease-out forwards;
 }
 
-.domofon-controls {
-    display: flex;
-    gap: 8px;
-}
-
-.apartment-card {
-    background: var(--tg-theme-secondary-bg-color);
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 12px;
-}
-
-.tenant {
-    margin-left: 16px;
-    padding: 8px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.tenant:last-child {
-    border-bottom: none;
-}
-
-.button {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 8px;
-    background: var(--tg-theme-button-color);
-    color: var(--tg-theme-button-text-color);
-    font-size: 14px;
-    cursor: pointer;
-}
-
-.button.success {
-    background: var(--success-color);
-}
-
-.snapshot-container {
-    margin-top: 16px;
-}
-
-#snapshotImage {
-    width: 100%;
-    border-radius: 12px;
-    margin-bottom: 16px;
-}
-
-h3, h4 {
-    margin: 0 0 12px 0;
-}
-
-p {
-    margin: 4px 0;
-}
-
-.error-screen {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 200px;
-}
-
-.error-message {
-    background: rgba(255, 59, 48, 0.1);
-    padding: 16px;
-    border-radius: 12px;
+/* Приветственный экран */
+.welcome-container {
+    max-width: 600px;
+    margin: 0 auto;
     text-align: center;
 }
 
-.loader {
-    width: 48px;
-    height: 48px;
-    border: 5px solid var(--tg-theme-secondary-bg-color);
-    border-bottom-color: var(--tg-theme-button-color);
-    border-radius: 50%;
-    display: inline-block;
-    box-sizing: border-box;
-    animation: rotation 1s linear infinite;
-    margin: 20px auto;
+.welcome-header h1 {
+    font-size: 28px;
+    margin-bottom: 8px;
 }
 
-.auth-button {
-    display: block;
-    width: 100%;
-    max-width: 300px;
-    margin: 20px auto;
-    padding: 16px;
-}
-
-/* Обновляем стили для веб-интерфейса */
-.welcome-screen {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 24px;
+.welcome-subtitle {
+    color: rgba(var(--text-color), 0.7);
+    font-size: 18px;
 }
 
 .features-block {
-    background: var(--tg-theme-secondary-bg-color);
-    border-radius: 12px;
-    padding: 20px;
-    margin: 24px 0;
+    background: rgba(var(--button-color), 0.1);
+    border-radius: 16px;
+    padding: 24px;
+    margin: 32px 0;
 }
 
-.features-block ul {
-    margin: 16px 0 0 0;
-    padding-left: 24px;
+.features-list {
+    list-style: none;
+    padding: 0;
+    text-align: left;
 }
 
-.features-block li {
-    margin-bottom: 12px;
+.features-list li {
+    margin: 12px 0;
+    padding-left: 32px;
+    position: relative;
 }
 
-.auth-form {
-    margin-top: 32px;
+.features-list li:before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 24px;
+    height: 24px;
+    background: var(--button-color);
+    border-radius: 50%;
+    transform: translateY(-50%);
+    opacity: 0.2;
 }
 
+/* Форма ввода */
 .input-group {
-    margin: 16px 0;
+    position: relative;
+    margin: 24px 0;
 }
 
 .phone-input {
     width: 100%;
-    padding: 12px 16px;
-    font-size: 16px;
-    border: 2px solid var(--tg-theme-secondary-bg-color);
-    border-radius: 8px;
-    background: transparent;
-    color: var(--tg-theme-text-color);
-    outline: none;
-    transition: border-color 0.2s;
-}
-
-.phone-input:focus {
-    border-color: var(--tg-theme-button-color);
-}
-
-.auth-button {
-    width: 100%;
-    padding: 14px;
-    font-size: 16px;
-    font-weight: 500;
-    background: var(--tg-theme-button-color);
-    color: var(--tg-theme-button-text-color);
+    padding: 16px;
+    font-size: 18px;
     border: none;
-    border-radius: 8px;
+    border-bottom: 2px solid rgba(var(--text-color), 0.1);
+    background: transparent;
+    color: var(--text-color);
+    transition: all 0.3s;
+}
+
+.input-line {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--button-color);
+    transition: width 0.3s;
+}
+
+.input-group.focused .input-line {
+    width: 100%;
+}
+
+/* Кнопки */
+.auth-button {
+    background: var(--button-color);
+    color: var(--button-text-color);
+    border: none;
+    border-radius: 12px;
+    padding: 16px 32px;
+    font-size: 18px;
     cursor: pointer;
-    transition: opacity 0.2s;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
 }
 
 .auth-button:hover {
-    opacity: 0.9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(var(--button-color), 0.2);
 }
 
-.error-message {
-    margin-top: 12px;
-    padding: 12px;
-    border-radius: 8px;
-    background: rgba(255, 59, 48, 0.1);
-    color: #ff3b30;
-    text-align: center;
+.button-arrow {
+    transition: transform 0.3s;
 }
 
-/* Добавляем новые стили */
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
+.auth-button:hover .button-arrow {
+    transform: translateX(4px);
+}
+
+/* Главное меню */
+.menu-container {
     padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
 }
 
-.header {
-    margin-bottom: 32px;
+.menu-title {
     text-align: center;
-}
-
-.header h1, .header h2 {
-    margin: 0;
-    font-weight: 500;
+    margin-bottom: 32px;
+    font-size: 24px;
 }
 
 .menu-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 24px;
-    margin-top: 32px;
 }
 
 .menu-card {
-    background: var(--tg-theme-secondary-bg-color);
+    background: rgba(var(--button-color), 0.1);
     border-radius: 16px;
     padding: 24px;
-    text-align: center;
     cursor: pointer;
-    transition: transform 0.2s;
+    transition: all 0.3s;
+    text-align: center;
 }
 
 .menu-card:hover {
     transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(var(--button-color), 0.15);
 }
 
-.menu-icon {
+.card-icon {
     font-size: 48px;
     margin-bottom: 16px;
+}
+
+.menu-card h3 {
+    margin: 0 0 8px 0;
+    font-size: 20px;
+}
+
+.menu-card p {
+    margin: 0;
+    opacity: 0.7;
+}
+
+/* Домофоны */
+.domofons-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.section-title {
+    text-align: center;
+    margin-bottom: 32px;
+    font-size: 24px;
 }
 
 .domofons-grid {
@@ -260,107 +226,190 @@ p {
 }
 
 .domofon-card {
-    background: var(--tg-theme-secondary-bg-color);
+    background: rgba(var(--button-color), 0.05);
     border-radius: 16px;
     overflow: hidden;
+    transition: all 0.3s;
+}
+
+.domofon-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(var(--button-color), 0.15);
 }
 
 .card-header {
     padding: 16px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(var(--button-color), 0.1);
 }
 
-.card-content {
-    padding: 16px;
+.card-title {
+    font-size: 18px;
+    font-weight: 500;
 }
 
-.preview-container {
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 8px;
+.card-preview {
     height: 200px;
+    background: rgba(0, 0, 0, 0.1);
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 16px;
     overflow: hidden;
 }
 
 .preview-placeholder {
-    color: rgba(255, 255, 255, 0.6);
-}
-
-.snapshot-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    color: rgba(var(--text-color), 0.5);
+    text-align: center;
+    padding: 20px;
 }
 
 .card-actions {
     display: flex;
     gap: 12px;
+    padding: 16px;
 }
 
-.button {
+.action-button {
     flex: 1;
     padding: 12px;
-    font-size: 14px;
-    border-radius: 8px;
     border: none;
+    border-radius: 8px;
+    background: var(--button-color);
+    color: var(--button-text-color);
     cursor: pointer;
-    transition: opacity 0.2s;
+    transition: all 0.3s;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
 }
 
-.button:hover {
-    opacity: 0.9;
+.action-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(var(--button-color), 0.2);
 }
 
-.door-status {
-    position: absolute;
+.action-button.success {
+    background: var(--success-color);
+}
+
+/* Квартиры */
+.apartments-list {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.apartment-item {
+    background: rgba(var(--button-color), 0.05);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.apartment-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(var(--button-color), 0.15);
+}
+
+.apartment-header {
+    font-size: 20px;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.apartment-address {
+    opacity: 0.7;
+}
+
+.apartment-details {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(var(--text-color), 0.1);
+}
+
+.tenant-list {
+    margin-top: 16px;
+}
+
+.tenant-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+}
+
+.tenant-icon {
+    font-size: 24px;
+}
+
+.tenant-info {
+    flex: 1;
+}
+
+.tenant-name {
+    font-weight: 500;
+}
+
+.tenant-phone {
+    opacity: 0.7;
+    font-size: 14px;
+}
+
+/* Лоадер */
+.loader {
+    width: 48px;
+    height: 48px;
+    border: 4px solid rgba(var(--button-color), 0.1);
+    border-left-color: var(--button-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 32px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Уведомления */
+.notification {
+    position: fixed;
     bottom: 24px;
     left: 50%;
     transform: translateX(-50%);
-    padding: 12px 24px;
-    border-radius: 8px;
+    padding: 16px 24px;
+    border-radius: 12px;
+    background: var(--bg-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 12px;
     animation: slideUp 0.3s ease-out;
 }
 
-.success-message {
-    background: rgba(52, 199, 89, 0.2);
-    color: #34c759;
+.notification.success {
+    background: var(--success-color);
+    color: white;
 }
 
-.status-details {
-    font-size: 12px;
-    margin-top: 4px;
-    opacity: 0.8;
-}
-
-@keyframes slideUp {
-    from {
-        transform: translate(-50%, 100%);
-        opacity: 0;
-    }
-    to {
-        transform: translate(-50%, 0);
-        opacity: 1;
-    }
+.notification.error {
+    background: var(--error-color);
+    color: white;
 }
 
 /* Адаптивность */
 @media (max-width: 768px) {
-    .container {
-        padding: 16px;
-    }
-    
     .menu-grid {
         grid-template-columns: 1fr;
     }
     
     .domofons-grid {
         grid-template-columns: 1fr;
+    }
+    
+    .card-preview {
+        height: 160px;
     }
 } 

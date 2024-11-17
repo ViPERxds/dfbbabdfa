@@ -1,68 +1,17 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Домофон</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="app">
-        <!-- Экран загрузки -->
-        <div id="loadingScreen" class="screen">
-            <div class="loader"></div>
-            <p>Загрузка приложения...</p>
-        </div>
-
-        <!-- Экран авторизации -->
-        <div id="authScreen" class="screen hidden">
-            <!-- Контент будет добавлен динамически через JavaScript -->
-        </div>
-
-        <!-- Главный экран -->
-        <div id="mainScreen" class="screen hidden">
-            <!-- Сюда будут добавляться кнопки меню -->
-        </div>
-
-        <!-- Экран домофонов -->
-        <div id="domofonsScreen" class="screen hidden">
-            <!-- Сюда будет добавляться список домофонов -->
-        </div>
-
-        <!-- Экран квартир -->
-        <div id="apartmentsScreen" class="screen hidden">
-            <!-- Сюда будет добавляться список квартир -->
-        </div>
-    </div>
-
+    <div id="mainScreen"></div>
     <script src="app.js"></script>
     <script>
-        // Добавляем обработку ошибок при инициализации
-        window.onerror = function(msg, url, lineNo, columnNo, error) {
-            console.error('Window error:', msg, error);
-            const app = document.getElementById('app');
-            if (app) {
-                app.innerHTML = `
-                    <div class="screen error-screen">
-                        <div class="error-message">
-                            <p>⚠️ Произошла ошибка при загрузке приложения</p>
-                            <button onclick="location.reload()">Попробовать снова</button>
-                        </div>
-                    </div>
-                `;
-            }
-            return false;
-        };
-
-        // Инициализируем приложение
-        document.addEventListener('DOMContentLoaded', () => {
-            try {
-                const app = new TelegramWebApp();
-            } catch (error) {
-                console.error('App initialization error:', error);
-            }
-        });
+        const app = new TelegramWebApp();
     </script>
 </body>
 </html> 
