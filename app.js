@@ -115,10 +115,15 @@ class TelegramWebApp {
     async checkAuth(phone) {
         try {
             const data = await this.apiRequest('/check-tenant', 'POST', { 
-                phone: parseInt(phone) 
+                phone: parseInt(phone, 10)
             });
-            this.tenant_id = data.tenant_id;
-            this.showMainMenu();
+            
+            if (data && typeof data.tenant_id === 'number') {
+                this.tenant_id = data.tenant_id;
+                this.showMainMenu();
+            } else {
+                throw new Error('Некорректный ответ от сервера');
+            }
         } catch (error) {
             console.error('Auth error:', error);
             throw error;
@@ -242,15 +247,15 @@ class TelegramWebApp {
         setTimeout(() => errorDiv.remove(), 3000);
     }
 
-    // Добавляем общий метод для API запросов
+    // Обновляем метод apiRequest
     async apiRequest(endpoint, method = 'GET', body = null) {
         const config = {
             method,
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json',
                 'x-api-key': this.API_TOKEN
-            },
-            mode: 'no-cors' // Добавляем этот параметр для обхода CORS
+            }
         };
 
         if (body) {
@@ -259,7 +264,18 @@ class TelegramWebApp {
 
         try {
             const response = await fetch(`${this.API_URL}${endpoint}`, config);
-            if (!response.ok) throw new Error('API request failed');
+            
+            // Проверяем статус ответа
+            if (response.status === 422) {
+                const errorData = await response.json();
+                console.error('Validation Error:', errorData);
+                throw new Error(errorData.detail[0]?.msg || 'Ошибка валидации');
+            }
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
             return await response.json();
         } catch (error) {
             console.error('API request error:', error);
@@ -267,7 +283,7 @@ class TelegramWebApp {
         }
     }
 
-    // Обновляем остальные методы API
+    // Обновляем метод getDomofons
     async getDomofons() {
         return await this.apiRequest(`/domo.apartment?tenant_id=${this.tenant_id}`);
     }
